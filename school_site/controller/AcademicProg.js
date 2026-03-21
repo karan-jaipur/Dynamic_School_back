@@ -48,3 +48,35 @@ exports.getAllPrograms = async (req, res) => {
     });
 
 };
+
+exports.updateProgram = async (req, res) => {
+  const { id } = req.params;
+
+  const updatedProgram = await Program.findByIdAndUpdate(
+    id,
+    {
+      title: req.body.title,
+      grades: req.body.grades,
+      description: req.body.description,
+    },
+    {
+      new: true,          // return updated data
+      runValidators: true // apply schema validation
+    }
+  );
+
+  if (!updatedProgram) {
+    return res.status(404).json({
+      success: false,
+      message: "Program not found",
+    });
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: "Program updated successfully",
+    data: updatedProgram,
+  });
+};
+
+
