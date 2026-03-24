@@ -30,7 +30,7 @@ exports.getStatistics = async (req, res) => {
 
 // UPDATE
 exports.updateStatistic = async (req, res) => {
-  const { id } = req.params;
+  const id = req.params.id;   // ✅ FIXED
 
   const statistic = await Statistic.findByIdAndUpdate(id, req.body, {
     new: true,
@@ -42,6 +42,7 @@ exports.updateStatistic = async (req, res) => {
     data: statistic,
   });
 };
+
 
 // DELETE
 exports.deleteStatistic = async (req, res) => {
