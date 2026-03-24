@@ -61,52 +61,47 @@ exports.createGallery = async (req, res) => {
 };
 
 // add category
-exports.  addCategory = async (req, res) => {
-  try {
+exports.addCategory = async (req, res) => {
 
-    const { category } = req.body;
+  const { category } = req.body;
 
-    if (!category) {
-      return res.status(400).json({
-        success: false,
-        message: "Category name is required"
-      });
-    }
-
-    // check if category already exists
-    const existing = await Gallery.findOne({ category });
-
-    if (existing) {
-      return res.status(400).json({
-        success: false,
-        message: "Category already exists"
-      });
-    }
-
-    // create category document
-    const newCategory = new Gallery({
-      category: category,
-      title: category,
-      description: "",
-      images: []
-    });
-
-    await newCategory.save();
-
-    res.status(201).json({
-      success: true,
-      message: "Category created successfully",
-      data: newCategory
-    });
-
-  } catch (error) {
-
-    res.status(500).json({
+  if (!category || !category.trim()) {
+    return res.status(400).json({
       success: false,
-      message: error.message
+      message: "Category name is required"
     });
-
   }
+
+  // normalize (IMPORTANT)
+  const normalizedCategory = category.trim().toLowerCase();
+
+  // check existing (case-insensitive)
+  const existing = await Gallery.findOne({
+    category: normalizedCategory
+  });
+
+  if (existing) {
+    return res.status(400).json({
+      success: false,
+      message: "Category already exists"
+    });
+  }
+
+  // create category (dummy entry but controlled)
+  const newCategory = new Gallery({
+    category: normalizedCategory,
+    title: normalizedCategory,
+    description: "CATEGORY_ONLY", // marker (IMPORTANT)
+    images: []
+  });
+
+  await newCategory.save();
+
+  return res.status(201).json({
+    success: true,
+    message: "Category created successfully",
+    data: newCategory
+  });
 };
 
 // Get all galleries
@@ -128,16 +123,23 @@ exports.getAllGalleries = async (req, res) => {
 // Get galleries by category
 exports.getByCategory = async (req, res) => {
   try {
-    const galleries = await Gallery.find({ category: req.params.category })
-      .sort({ date: -1 });
+
+    const category = req.params.category.trim().toLowerCase();
+
+    const galleries = await Gallery.find({
+      category: category,
+      description: { $ne: "CATEGORY_ONLY" } // exclude fake ones
+    }).sort({ date: -1 });
+
     res.json({
       success: true,
       data: galleries
     });
+
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      message: error.message 
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 };
@@ -145,15 +147,33 @@ exports.getByCategory = async (req, res) => {
 // Get all categories
 exports.getCategories = async (req, res) => {
   try {
-    const categories = await Gallery.distinct('category');
+
+    const categories = await Gallery.aggregate([
+      {
+        $group: {
+          _id: { $toLower: "$category" }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          category: "$_id"
+        }
+      },
+      {
+        $sort: { category: 1 }
+      }
+    ]);
+
     res.json({
       success: true,
-      data: categories
+      data: categories.map(c => c.category)
     });
+
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      message: error.message 
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 };
