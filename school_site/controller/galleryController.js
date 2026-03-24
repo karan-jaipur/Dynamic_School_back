@@ -6,6 +6,8 @@ exports.createGallery = async (req, res) => {
 
     const { category, title, description } = req.body;
 
+    const normalizedCategory = category.trim().toLowerCase();
+
     let images = [];
 
     if (req.files && req.files.length > 0) {
@@ -15,48 +17,26 @@ exports.createGallery = async (req, res) => {
       }));
     }
 
-    // check category already exists
-    let gallery = await Gallery.findOne({ category });
+    const newGallery = new Gallery({
+      category: normalizedCategory,
+      title,
+      description,
+      images
+    });
 
-    if (gallery) {
+    await newGallery.save();
 
-      // push images to existing category
-      gallery.images.push(...images);
-
-      await gallery.save();
-
-      return res.status(200).json({
-        success: true,
-        message: "Images added to existing category",
-        data: gallery
-      });
-
-    } else {
-
-      // create new category gallery
-      gallery = new Gallery({
-        category,
-        title,
-        description,
-        images
-      });
-
-      await gallery.save();
-
-      return res.status(201).json({
-        success: true,
-        message: "Gallery created successfully",
-        data: gallery
-      });
-    }
+    return res.status(201).json({
+      success: true,
+      message: "Gallery created successfully",
+      data: newGallery
+    });
 
   } catch (error) {
-
     res.status(500).json({
       success: false,
       message: error.message
     });
-
   }
 };
 
