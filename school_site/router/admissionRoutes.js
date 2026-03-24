@@ -8,6 +8,7 @@ const auth = require('../middleware/auth');
 // @access  Public
 router.post('/', admissionController.createAdmission);
 
+
 // @route   GET /api/admissions
 // @desc    Get all admissions
 // @access  Public (admin panel list; protect with login in production if needed)
