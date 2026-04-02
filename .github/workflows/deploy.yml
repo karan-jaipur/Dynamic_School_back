@@ -11,13 +11,14 @@ jobs:
 
     steps:
       - name: Deploy to EC2
-        uses: appleboy/ssh-action@v1.0.0
+        uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/Dynamic_School_back/school_site
-            git pull origin main
+            git fetch origin
+            git reset --hard origin/main
             npm install
-            pm2 restart school-backend
+            pm2 reload all
