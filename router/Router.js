@@ -13,6 +13,7 @@ const admissionRoutes = require('./admissionRoutes');
 const testimonialRoutes = require('./testimonialRoutes');
 const settingsRoutes = require('./settingsRoutes');
 const footerRoutes = require('./footerRoutes');
+const mediaLibraryRoutes = require('./mediaLibraryRoutes');
 const AcademicRoute = require('./AcademicProg');
 const StatisticRoute = require('./StatisticsRoute')
 const contentRoutes = require('./contentRoutes');
@@ -30,6 +31,7 @@ router.use('/admissions', admissionRoutes);
 router.use('/testimonials', testimonialRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/footer', footerRoutes);
+router.use('/media-library', mediaLibraryRoutes);
 router.use('/AcademicProg',AcademicRoute)
 router.use('/Statistic',StatisticRoute)
 

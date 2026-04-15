@@ -1,17 +1,56 @@
 const Admission = require('../model/Admission');
 
+function normalizeText(value) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function buildAdmissionPayload(body = {}) {
+  const source = body.source === 'contact' ? 'contact' : 'admission';
+
+  if (source === 'contact') {
+    return {
+      source,
+      studentName: normalizeText(body.studentName || body.name),
+      parentName: '',
+      email: normalizeText(body.email),
+      phone: normalizeText(body.phone),
+      class: '',
+      dob: null,
+      address: '',
+      subject: normalizeText(body.subject) || 'Website Inquiry',
+      message: normalizeText(body.message),
+    };
+  }
+
+  return {
+    source,
+    studentName: normalizeText(body.studentName || body.name),
+    parentName: normalizeText(body.parentName || body.fatherName),
+    email: normalizeText(body.email),
+    phone: normalizeText(body.phone),
+    class: normalizeText(body.class),
+    dob: body.dob || null,
+    address: normalizeText(body.address),
+    subject: '',
+    message: '',
+  };
+}
+
 // Create admission application
 exports.createAdmission = async (req, res) => {
   try {
-    const admission = new Admission(req.body);
+    const payload = buildAdmissionPayload(req.body);
+    const admission = new Admission(payload);
     await admission.save();
     res.status(201).json({
       success: true,
-      message: 'Admission application submitted successfully',
+      message: payload.source === 'contact'
+        ? 'Contact enquiry submitted successfully'
+        : 'Admission application submitted successfully',
       data: admission
     });
   } catch (error) {
-    res.status(500).json({ 
+    res.status(400).json({ 
       success: false,
       message: error.message 
     });

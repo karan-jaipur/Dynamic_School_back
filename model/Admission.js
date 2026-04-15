@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const admissionSchema = new mongoose.Schema({
+  source: {
+    type: String,
+    enum: ['admission', 'contact'],
+    default: 'admission'
+  },
   studentName: {
     type: String,
     required: true,
@@ -8,7 +13,9 @@ const admissionSchema = new mongoose.Schema({
   },
   parentName: {
     type: String,
-    required: true,
+    required: function requiredParent() {
+      return this.source === 'admission';
+    },
     trim: true
   },
   email: {
@@ -18,20 +25,38 @@ const admissionSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    required: true,
+    required: function requiredPhone() {
+      return this.source === 'admission';
+    },
     trim: true
   },
   class: {
     type: String,
-    required: true
+    required: function requiredClass() {
+      return this.source === 'admission';
+    }
   },
   dob: {
     type: Date,
-    required: true
+    required: function requiredDob() {
+      return this.source === 'admission';
+    }
   },
   address: {
     type: String,
-    required: true
+    required: function requiredAddress() {
+      return this.source === 'admission';
+    }
+  },
+  subject: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  message: {
+    type: String,
+    trim: true,
+    default: ''
   },
   isContacted: {
     type: Boolean,
